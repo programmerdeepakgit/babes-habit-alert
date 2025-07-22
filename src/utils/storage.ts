@@ -1,9 +1,10 @@
-import { DaySchedule, WeekEntry } from '@/types/habit';
+import { DaySchedule, WeekEntry, DEFAULT_SCHEDULES } from '@/types/habit';
 
 const STORAGE_KEYS = {
   WEEK_ENTRIES: 'babes_habit_week_entries',
   DAY_SCHEDULES: 'babes_habit_day_schedules',
   CURRENT_WEEK: 'babes_habit_current_week',
+  CUSTOM_SCHEDULES: 'babes_habit_custom_schedules',
 } as const;
 
 export const storage = {
@@ -66,6 +67,28 @@ export const storage = {
   isToday: (dateString: string): boolean => {
     const today = new Date();
     return storage.formatDate(today) === dateString;
+  },
+
+  // Custom schedule management
+  saveCustomSchedule: (type: 'onday' | 'offday', activities: {time: string, name: string}[]): void => {
+    const customSchedules = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_SCHEDULES) || '{}');
+    customSchedules[type] = activities;
+    localStorage.setItem(STORAGE_KEYS.CUSTOM_SCHEDULES, JSON.stringify(customSchedules));
+  },
+
+  getCustomSchedule: (type: 'onday' | 'offday'): {time: string, name: string}[] | null => {
+    const customSchedules = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_SCHEDULES) || '{}');
+    return customSchedules[type] || null;
+  },
+
+  resetToDefault: (type: 'onday' | 'offday'): void => {
+    const customSchedules = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_SCHEDULES) || '{}');
+    customSchedules[type] = DEFAULT_SCHEDULES[type];
+    localStorage.setItem(STORAGE_KEYS.CUSTOM_SCHEDULES, JSON.stringify(customSchedules));
+  },
+
+  clearAllSchedules: (): void => {
+    localStorage.removeItem(STORAGE_KEYS.DAY_SCHEDULES);
   },
 
   clearAllData: (): void => {

@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useHabits } from '@/hooks/useHabits';
 import { AppHeader } from '@/components/AppHeader';
 import { ActivityCard } from '@/components/ActivityCard';
 import { AddActivityDialog } from '@/components/AddActivityDialog';
 import { StatsCard } from '@/components/StatsCard';
-import { useHabits } from '@/hooks/useHabits';
-import { useNotifications } from '@/hooks/useNotifications';
-import { toast } from '@/hooks/use-toast';
+import { MenuSheet } from '@/components/MenuSheet';
+import { SettingsDialog } from '@/components/SettingsDialog';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 const Index = () => {
-  const [showMenu, setShowMenu] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
   const {
     selectedDate,
     setSelectedDate,
@@ -19,25 +24,12 @@ const Index = () => {
     getCompletionStats,
   } = useHabits();
 
-  const { scheduleActivitiesForDay, permission } = useNotifications();
-
-  // Schedule notifications when date or activities change
-  useEffect(() => {
-    if (currentSchedule && permission === 'granted') {
-      scheduleActivitiesForDay(currentSchedule.activities, selectedDate);
-    }
-  }, [currentSchedule, selectedDate, permission, scheduleActivitiesForDay]);
-
-  const stats = getCompletionStats();
-  const isToday = selectedDate.toDateString() === new Date().toDateString();
-
   const handleMenuClick = () => {
-    setShowMenu(!showMenu);
-    toast({
-      title: "Menu",
-      description: "Settings and more features coming soon!",
-      duration: 2000,
-    });
+    setIsMenuOpen(true);
+  };
+
+  const handleSettingsClick = () => {
+    setIsSettingsOpen(true);
   };
 
   if (loading) {
@@ -50,6 +42,9 @@ const Index = () => {
       </div>
     );
   }
+
+  const stats = getCompletionStats();
+  const isToday = selectedDate.toDateString() === new Date().toDateString();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
@@ -76,7 +71,7 @@ const Index = () => {
             </p>
             {isToday && (
               <p className="text-xs text-success mt-1">
-                Today's activities • Notifications {permission === 'granted' ? 'enabled' : 'disabled'}
+                Today's activities • Fully offline app
               </p>
             )}
           </div>
@@ -117,11 +112,23 @@ const Index = () => {
           )}
         </div>
 
-        {/* Add Activity Button */}
-        <div className="sticky bottom-6">
+        {/* Add Activity Button - Fixed at bottom */}
+        <div className="fixed bottom-6 right-6">
           <AddActivityDialog onAdd={addActivity} />
         </div>
       </main>
+
+      <MenuSheet
+        open={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
+        onSettingsClick={handleSettingsClick}
+      />
+
+      <SettingsDialog
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
+      />
+
     </div>
   );
 };

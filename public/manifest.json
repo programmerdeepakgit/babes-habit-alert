@@ -1,0 +1,21 @@
+{
+  "name": "Babes Habit - Offline Habit Tracker",
+  "short_name": "Babes Habit",
+  "description": "Offline habit tracking app with voice notifications designed by Programmer Deepak",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["productivity", "lifestyle"],
+  "lang": "en-US",
+  "dir": "ltr"
+}

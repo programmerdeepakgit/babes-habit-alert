@@ -3,18 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Babes Habit - Daily Activity Tracker</title>
+    <title>Babes Habit - Offline Habit Tracker</title>
     <meta name="description" content="Offline habit tracking app with voice notifications designed by Programmer Deepak" />
     <meta name="author" content="Programmer Deepak" />
+    <meta name="theme-color" content="#6366f1" />
+    <link rel="manifest" href="/manifest.json" />
 
-    <meta property="og:title" content="Babes Habit - Daily Activity Tracker" />
-    <meta property="og:description" content="Offline habit tracking app with voice notifications designed by Programmer Deepak" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Babes Habit" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <script>
+      // Register service worker for offline functionality
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+
+      // Enable persistent storage
+      if ('storage' in navigator && 'persist' in navigator.storage) {
+        navigator.storage.persist().then(persistent => {
+          console.log('Persistent storage granted:', persistent);
+        });
+      }
+
+      // Ensure speech synthesis voices are loaded
+      if ('speechSynthesis' in window) {
+        speechSynthesis.onvoiceschanged = () => {
+          console.log('Speech synthesis voices loaded:', speechSynthesis.getVoices().length);
+        };
+      }
+    </script>
   </head>
 
   <body>

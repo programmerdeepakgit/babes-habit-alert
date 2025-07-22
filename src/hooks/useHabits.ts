@@ -21,7 +21,11 @@ export const useHabits = () => {
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
     const scheduleType = isWeekend ? 'offday' : 'onday';
     
-    const activities: Activity[] = DEFAULT_SCHEDULES[scheduleType].map((activity, index) => ({
+    // Get custom schedule or default
+    const customSchedule = storage.getCustomSchedule(scheduleType);
+    const scheduleToUse = customSchedule || DEFAULT_SCHEDULES[scheduleType];
+    
+    const activities: Activity[] = scheduleToUse.map((activity, index) => ({
       id: `${dateString}_${index}`,
       time: activity.time,
       name: activity.name,

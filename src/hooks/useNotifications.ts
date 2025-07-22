@@ -48,34 +48,83 @@ export const useNotifications = () => {
 
   const showNotification = (activity: Activity) => {
     const title = "Babes Habit Alert";
-    const body = `Babes. It's time of ${activity.name}`;
+    const message = `Babes. It's time of ${activity.name}`;
     
     // Show browser notification if permission granted
     if (permission === 'granted') {
       new Notification(title, {
-        body,
+        body: message,
         icon: '/favicon.ico',
         tag: activity.id,
         requireInteraction: true,
       });
     }
 
+    // Voice announcement using Speech Synthesis API
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.rate = 0.8;
+      utterance.pitch = 1.1;
+      utterance.volume = 0.9;
+      
+      // Try to use a female voice
+      const voices = speechSynthesis.getVoices();
+      const femaleVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('female') || 
+        voice.name.toLowerCase().includes('samantha') || 
+        voice.name.toLowerCase().includes('karen') ||
+        voice.name.toLowerCase().includes('zira') ||
+        voice.name.toLowerCase().includes('microsoft')
+      );
+      
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+      }
+      
+      // Ensure voices are loaded before speaking
+      if (voices.length === 0) {
+        speechSynthesis.onvoiceschanged = () => {
+          const newVoices = speechSynthesis.getVoices();
+          const newFemaleVoice = newVoices.find(voice => 
+            voice.name.toLowerCase().includes('female') ||
+            voice.name.toLowerCase().includes('samantha')
+          );
+          if (newFemaleVoice) {
+            utterance.voice = newFemaleVoice;
+          }
+          speechSynthesis.speak(utterance);
+        };
+      } else {
+        speechSynthesis.speak(utterance);
+      }
+    }
+
     // Also show toast notification
     toast({
       title: title,
-      description: body,
-      duration: 10000,
+      description: message,
+      duration: 8000,
     });
 
-    // Play notification sound (if available)
+    // Play system notification sound
     try {
-      const audio = new Audio('/notification-sound.mp3');
-      audio.play().catch(() => {
-        // Fallback: use system beep
-        console.log('🔔 Notification:', body);
-      });
+      // Create audio context for a simple beep
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
-      console.log('🔔 Notification:', body);
+      console.log('🔔 Notification:', message);
     }
   };
 

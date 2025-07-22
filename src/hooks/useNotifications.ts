@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Activity } from '@/types/habit';
+import { Activity, Assignment } from '@/types/habit';
 import { toast } from '@/hooks/use-toast';
+import { assignmentStorage } from '@/utils/assignmentStorage';
 
 export const useNotifications = () => {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [scheduledNotifications, setScheduledNotifications] = useState<number[]>([]);
+  const [assignmentNotifications, setAssignmentNotifications] = useState<number[]>([]);
 
   useEffect(() => {
     // Check if notifications are supported
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
+    
+    scheduleAssignmentNotifications();
+    
+    // Schedule assignment notifications daily
+    const interval = setInterval(scheduleAssignmentNotifications, 24 * 60 * 60 * 1000);
+    
+    return () => {
+      clearInterval(interval);
+      clearScheduledNotifications();
+    };
   }, []);
 
   const requestPermission = async (): Promise<boolean> => {
@@ -140,9 +152,70 @@ export const useNotifications = () => {
     });
   };
 
+  // Schedule assignment notifications
+  const scheduleAssignmentNotifications = () => {
+    // Clear existing assignment notifications
+    assignmentNotifications.forEach(timeout => clearTimeout(timeout));
+    setAssignmentNotifications([]);
+
+    const assignments = assignmentStorage.getAssignmentsWithNotificationsToday();
+    const now = new Date();
+    
+    const timeouts = assignments.map(assignment => {
+      if (!assignment.notificationTime) return null;
+      
+      const [hours, minutes] = assignment.notificationTime.split(':').map(Number);
+      const notificationTime = new Date();
+      notificationTime.setHours(hours, minutes, 0, 0);
+      
+      const timeout = notificationTime.getTime() - now.getTime();
+      if (timeout > 0) {
+        return window.setTimeout(() => showAssignmentNotification(assignment), timeout);
+      }
+      return null;
+    }).filter(Boolean) as number[];
+    
+    setAssignmentNotifications(timeouts);
+  };
+
+  // Show assignment notification
+  const showAssignmentNotification = (assignment: Assignment) => {
+    const title = `Assignment Reminder: ${assignment.title}`;
+    const body = `Subject: ${assignment.subject} | Due: ${new Date(assignment.lastSubmitDate).toLocaleDateString()}`;
+
+    // Browser notification
+    if (permission === 'granted') {
+      new Notification(title, {
+        body,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+      });
+    }
+
+    // Voice notification
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(
+        `Assignment reminder: ${assignment.title} for ${assignment.subject}. Due on ${new Date(assignment.lastSubmitDate).toLocaleDateString()}.`
+      );
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      speechSynthesis.speak(utterance);
+    }
+
+    // Toast notification
+    toast({
+      title,
+      description: body,
+      duration: 10000,
+    });
+  };
+
   const clearScheduledNotifications = () => {
     scheduledNotifications.forEach(id => clearTimeout(id));
     setScheduledNotifications([]);
+    assignmentNotifications.forEach(timeout => clearTimeout(timeout));
+    setAssignmentNotifications([]);
   };
 
   const testNotification = () => {
@@ -159,6 +232,7 @@ export const useNotifications = () => {
     requestPermission,
     scheduleNotification,
     scheduleActivitiesForDay,
+    scheduleAssignmentNotifications,
     clearScheduledNotifications,
     showNotification,
     testNotification,

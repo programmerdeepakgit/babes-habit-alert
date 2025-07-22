@@ -1,7 +1,8 @@
-import { Settings, Info, Bell, Smartphone } from 'lucide-react';
+import { Settings, Info, Bell, Smartphone, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
+import { useNavigate } from 'react-router-dom';
 
 interface MenuSheetProps {
   open: boolean;
@@ -10,8 +11,15 @@ interface MenuSheetProps {
 }
 
 export const MenuSheet = ({ open, onOpenChange, onSettingsClick }: MenuSheetProps) => {
+  const navigate = useNavigate();
+
   const handleSettingsClick = () => {
     onSettingsClick();
+    onOpenChange(false);
+  };
+
+  const handleAssignmentsClick = () => {
+    navigate('/assignments');
     onOpenChange(false);
   };
 
@@ -44,6 +52,18 @@ export const MenuSheet = ({ open, onOpenChange, onSettingsClick }: MenuSheetProp
             <div>
               <p className="font-medium">Settings</p>
               <p className="text-xs text-muted-foreground">Customize your activities</p>
+            </div>
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-left p-3 h-auto hover:bg-primary/10"
+            onClick={handleAssignmentsClick}
+          >
+            <BookOpen className="w-5 h-5 mr-3 text-primary" />
+            <div>
+              <p className="font-medium">Assignments</p>
+              <p className="text-xs text-muted-foreground">Manage coaching assignments</p>
             </div>
           </Button>
           

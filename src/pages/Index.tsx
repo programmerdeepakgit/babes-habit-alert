@@ -6,6 +6,7 @@ import { AddActivityDialog } from '@/components/AddActivityDialog';
 import { StatsCard } from '@/components/StatsCard';
 import { MenuSheet } from '@/components/MenuSheet';
 import { SettingsDialog } from '@/components/SettingsDialog';
+import { PendingAssignments } from '@/components/PendingAssignments';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
@@ -62,6 +63,9 @@ const Index = () => {
           percentage={stats.percentage}
           date={selectedDate}
         />
+
+        {/* Pending Assignments */}
+        <PendingAssignments />
 
         {/* Schedule Type Indicator */}
         {currentSchedule && (

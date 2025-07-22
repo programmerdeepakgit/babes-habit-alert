@@ -20,6 +20,19 @@ export interface WeekEntry {
   };
 }
 
+export interface Assignment {
+  id: string;
+  title: string;
+  subject: string;
+  description?: string;
+  lastSubmitDate: string;
+  isCompleted: boolean;
+  completedAt?: Date;
+  notificationTime?: string;
+  priority: 'high' | 'medium' | 'low';
+  createdAt: Date;
+}
+
 export const DEFAULT_SCHEDULES = {
   onday: [
     { time: '05:00', name: 'Meditation & Wake' },
